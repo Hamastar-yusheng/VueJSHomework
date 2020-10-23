@@ -1,0 +1,202 @@
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Vue的練習程式</title>
+		<script src="vue.js" type="text/javascript" charset="utf-8"></script>
+
+
+	</head>
+	<body>
+		<div id="APP">
+			<span>代辦事項</span><input v-model="addtext" ref="Add" @keyup.enter="AddClick" placeholder="準備要做的任務" />
+			<button @Click="AddClick">新增</button>
+			<div>
+				<button @Click="ChangeTab('全部',$event)">全部</button>
+				<button @Click="ChangeTab('進行中',$event)">進行中</button>
+				<button @Click="ChangeTab('已完成',$event)">已完成</button>
+			</div>
+			<divs>
+				<div name="全部" v-show="TABA">
+					<ul><span>全部</span>
+						<li v-for="(item,index) in typeB" :key="index" @dblclick="EditEvent(item)" >
+						<div v-if="item.id!==CacheTodo.id">
+							<input type="checkbox" :id="item.id" v-model="item.state" />
+							<label :for="item.id"
+							class="uncomplete"
+							:class="{'complete': item.state}">
+							第{{index+1}}項：{{item.mession}} </label>
+							<img  @Click="Remove(item)" src="https://cdn1.iconfinder.com/data/icons/text-editor-1-1/64/x_delete_stop-512.png" class="pic"/>						
+						</div>
+						<div>
+						<input type="text" v-model="CacheMession" v-if="item.id ===CacheTodo.id" @keyup.esc="CancleEdit()" @keyup.enter="DoneEdit(item)"/>
+						</div>
+						
+					</li>
+					</ul>
+				</div>
+				<div name="進行中" v-show="TABB">
+					<ul><span>進行中</span>
+						<li v-for="(item,index) in typeB" :key="index" @dblclick="EditEvent(item)"  v-if="item.state==false" >
+							<div v-if="item.id!==CacheTodo.id">
+								<input type="checkbox" :id="item.id" v-model="item.state" />
+								<label :for="item.id"
+								class="uncomplete"
+								:class="{'complete': item.state}">
+								第{{index+1}}項：{{item.mession}} </label>
+								<img  @Click="Remove(item)" src="https://cdn1.iconfinder.com/data/icons/text-editor-1-1/64/x_delete_stop-512.png" class="pic"/>						
+							</div>
+							<div>
+								<input type="text" v-model="CacheMession" v-if="item.id ===CacheTodo.id" @keyup.esc="CancleEdit()" @keyup.enter="DoneEdit(item)"/>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div name="已完成" v-show="TABC">
+					<ul><span>已完成</span>
+						<li v-for="(item,index) in typeB" :key="index" @dblclick="EditEvent(item)" v-if="item.state==true" >
+							<div v-if="item.id!==CacheTodo.id">
+								<input type="checkbox" :id="item.id" v-model="item.state" />
+								<label :for="item.id"
+								class="uncomplete"
+								:class="{'complete': item.state}">
+								第{{index+1}}項：{{item.mession}} </label>
+								<img  @Click="Remove(item)" src="https://cdn1.iconfinder.com/data/icons/text-editor-1-1/64/x_delete_stop-512.png" class="pic"/>						
+							</div>
+							<div>
+							<input type="text" v-model="CacheMession" v-if="item.id ===CacheTodo.id" @keyup.esc="CancleEdit()" @keyup.enter="DoneEdit(item)"/>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</tabs>
+			<div :likes="count">還有<span>{{getUnFinishedList }}</span>筆任務未完成</div>
+				<button @Click="cleanAll" class="">清除所有任務</button>
+
+			</div>
+
+		</div>
+		</div>
+
+		<script type="text/javascript">
+		
+			var app = new Vue({ //Vue 呼叫函數
+				el: '#APP', //el => element 元件
+				data: {
+					CacheMession:'',
+					CacheTodo:{},
+					count:0,
+					checkbox: '',
+					TABA: true,
+					TABB: false,
+					TABC: false,
+					addtext: "",
+					typeB: [{
+							id:'1',
+							mession: '任務1',
+							state: false, //state false 進行中 true 已完成
+						},
+						{	id:'2',
+							mession: '任務2',
+							state: false, 
+						},
+					],
+
+				},
+				watch: {
+						//checkbox點擊
+						ChkClick:function(state){
+							 //this.typeB.state="(已完成)";
+					this.state='(已完成)';
+					app.$forceUpdate();
+					}
+				},
+				methods: {
+					DoneEdit:function(item){
+						item.mession = this.CacheMession;
+						this.CacheMession='';
+						this.CacheTodo={};
+					},
+					CancleEdit:function(){
+					this.CacheTodo={};
+					},
+					EditEvent :function(item){
+					this.CacheTodo=item;
+					this.CacheMession=item.mession;
+					},
+					//打叉叉移除		
+					Remove:function(todo){
+						var vm = this;
+						var newIndex = vm.typeB.findIndex(function(item,key){
+							return todo.id===item.id;
+						})
+						 this.typeB.splice(newIndex, 1);
+					},
+					//清除所有任務
+					cleanAll: function() {
+						this.typeB.splice(0);
+					},
+					//新增任務
+					AddClick: function() {
+						var timestamp = Math.floor(Date.now());
+						console.log('click greet')
+						let NewMession = {		
+							id:timestamp,												
+							mession: this.$refs.Add.value.trim(),
+							state: false,
+						};
+						this.typeB.push(NewMession); //進行中
+						this.addtext='';
+
+					},
+					//切換TAB
+					ChangeTab: function(str, e) {
+						switch (str) {
+							case "全部":
+								this.TABA = true;
+								this.TABB = false;
+								this.TABC = false;
+								break;
+							case "進行中":
+								this.TABA = false;
+								this.TABB = true;
+								this.TABC = false;
+								break;
+							case "已完成":
+								this.TABA = false;
+								this.TABB = false;
+								this.TABC = true;
+								break;
+						}
+					}
+				},				
+				computed: {
+					getUnFinishedList: function() {			
+						var i =0;
+						var vm=this;
+						vm.typeB.forEach(function(item){
+							if(item.state==false){
+								i++;
+							}
+						})
+									
+						return i;
+					}
+					
+				}
+			});
+
+		</script>
+	</body>
+	<style>
+		.complete{
+			text-decoration: line-through;
+		}
+		.uncomplete{
+			color: black;
+		}
+		.pic{
+			height: 20px;
+			width: 20px;
+		}	
+	</style>
+</html>
